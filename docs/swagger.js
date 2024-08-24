@@ -15,7 +15,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./docs/swaggerAnnotations.js"], // Reference to the annotation file
+  apis: ["./swaggerAnnotations.js"], // Reference to the annotation file
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
