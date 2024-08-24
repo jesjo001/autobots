@@ -19,12 +19,12 @@ app.use(cors());
 app.use(express.json());
 // You can also configure CORS with specific options, such as allowing only certain origins:
 app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend's URL
+  origin: `http://localhost:${process.env.FRONT_END_PORT}`, // Replace with your frontend's URL
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, // Allow cookies if needed
 }));
 // Sync database
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ force: true }).then(() => {
   console.log('Database synced successfully.');
 }).catch(err => {
   console.error('Failed to sync database:', err);
@@ -41,39 +41,27 @@ const startAutobotCreation = async () => {
       console.error('Error during initial Autobot creation:', error);
     }};
 
+const scheduleAutobotCreation = () => {
+    cron.schedule('0 * * * *', async () => {
+        console.log('Running scheduled Autobot creation job...');
+        await flushDatabase();
+        await AutobotPresenter.createAutobotsJob();
+        console.log('Scheduled Autobot creation job completed.');
+    });
+};
+
 // Schedule the autobot creation every hour
-
-
-// // Swagger setup
-// const swaggerOptions = {
-//   swaggerDefinition: {
-//     openapi: "3.0.0",
-//     info: {
-//       title: "TweetAI API",
-//       version: "1.0.0",
-//       description: "API documentation for TweetAI",
-//     },
-//     servers: [{ url: "http://localhost:3000" }],
-//   },
-//   apis: ["./routes/*.js"],
-// };
-
-// const swaggerDocs = swaggerJsDoc(swaggerOptions);
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Swagger setup
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/api', apiRoutes);
+await flushDatabase();
 
-app.listen(process.env.PORT || 3000, async() => {
+app.listen(process.env.PORT || 3000, () => {
   console.log("Server is running on port 3000.");
   console.log("Starting Autobot....");
-  await flushDatabase();
-
-  await startAutobotCreation();
-
-  cron.schedule('0 * * * *', () => {
-    console.log('Running scheduled Autobot creation job...');
-   AutobotPresenter.createAutobotsJob();
+  startAutobotCreation();  // Immediate start
+  scheduleAutobotCreation();   
 });
-});
+
+

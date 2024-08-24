@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Autobot } from '../models/Autobot.js';
 import { Post } from '../models/Post.js';
 import { Comment } from '../models/Comment.js';
+import cron from 'node-cron';
+import { flushDatabase } from '../config/flushDb.js';
 
 export const createAutobots = async () => {
   for (let i = 0; i < 500; i++) {
@@ -38,6 +40,27 @@ export const createAutobots = async () => {
               });
             }
         }
-    }
+    } else console.log("No data from api!!, Data exhausted!! ")
   }
+};
+
+
+// Function to start Autobot creation immediately
+export const startAutobotCreation = () => {
+    try {
+      console.log('Starting initial Autobot creation...');
+      createAutobotsJob();
+      console.log('Initial Autobot creation completed.');
+    } catch (error) {
+      console.error('Error during initial Autobot creation:', error);
+    }
+};
+
+export const scheduleAutobotCreation = () => {
+    cron.schedule('0 * * * *', async () => {
+        console.log('Running scheduled Autobot creation job...');
+        await flushDatabase();
+        await createAutobotsJob();
+        console.log('Scheduled Autobot creation job completed.');
+    });
 };
