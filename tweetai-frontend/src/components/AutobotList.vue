@@ -28,11 +28,12 @@
         this.error = null;
         try {
           const response = await apiService.getAutobots();
-          this.autobots = response.data.slice(0, 10); // Display first 10 Autobots
+          return this.autobots = response?.data?.rows.slice(0, 10); // Display first 10 Autobots
         } catch (error) {
           if (error.response && error.response.status === 429) {
             this.error = 'Too many requests. Please try again later.';
           } else {
+            console.log(error)
             this.error = 'An error occurred while fetching Autobots.';
           }
         }
