@@ -10,6 +10,7 @@ import cors from 'cors'; // Import the CORS middleware
 import swaggerDocs from './docs/swagger.js';
 // Import models to ensure they are initialized and associations are set
 import './models/index.js';
+import { flushDatabase } from './config/flushDb.js';
 
 dotenv.config();
 const app = express();
@@ -29,10 +30,19 @@ sequelize.sync({ alter: true }).then(() => {
   console.error('Failed to sync database:', err);
 });
 
+
+// Function to start Autobot creation immediately
+const startAutobotCreation = async () => {
+    try {
+      console.log('Starting initial Autobot creation...');
+      await AutobotPresenter.createAutobotsJob();
+      console.log('Initial Autobot creation completed.');
+    } catch (error) {
+      console.error('Error during initial Autobot creation:', error);
+    }};
+
 // Schedule the autobot creation every hour
-cron.schedule('0 * * * *', () => {
-  AutobotPresenter.createAutobotsJob();
-});
+
 
 // // Swagger setup
 // const swaggerOptions = {
@@ -55,6 +65,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/api', apiRoutes);
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3000, async() => {
   console.log("Server is running on port 3000.");
+  console.log("Starting Autobot....");
+  await flushDatabase();
+
+  await startAutobotCreation();
+
+  cron.schedule('0 * * * *', () => {
+    console.log('Running scheduled Autobot creation job...');
+   AutobotPresenter.createAutobotsJob();
+});
 });
