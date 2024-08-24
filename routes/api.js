@@ -1,4 +1,3 @@
-// routes/api.js
 import { Router } from 'express';
 import { AutobotView } from '../views/AutobotView.js';
 import rateLimit from 'express-rate-limit';

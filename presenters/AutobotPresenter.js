@@ -1,4 +1,3 @@
-// presenters/AutobotPresenter.js
 import { createAutobots } from '../services/AutobotService.js';
 
 export const AutobotPresenter = {
